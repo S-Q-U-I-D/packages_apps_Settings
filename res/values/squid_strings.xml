@@ -9,4 +9,15 @@
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_enforcing">Enforcing</string>
 
+<<<<<<< HEAD
+=======
+    <!-- Option defining the phone ringtone for slot1 on Muilti SIM device -->
+    <string name="ringtone1_title">Phone ringtone - SIM 1</string>
+    <string name="ringtone2_title">Phone ringtone - SIM 2</string>
+
+    <!-- Extra Settings -->
+    <string name="extra_settings_title">Extras</string>
+    <string name="extra_settings_summary">Additional settings</string>
+
+>>>>>>> 940649c9f7... Add custom ExtraSettings dashboard
 </resources>
