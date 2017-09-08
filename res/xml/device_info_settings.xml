@@ -27,7 +27,7 @@
         android:order="1"
         android:title="@string/changelog_title"
         android:summary="@string/changelog_summary"
-        android:fragment="com.android.settings.aosp.Changelog" />
+        android:fragment="com.android.settings.squid.Changelog" />
         
     <!-- Phone number -->
     <Preference
@@ -63,10 +63,26 @@
     <!-- Android version -->
     <Preference
         android:key="firmware_version"
-        android:order="32"
+        android:order="31"
         android:title="@string/firmware_version"
         settings:keywords="@string/keywords_android_version"
         android:summary="@string/summary_placeholder"/>
+
+    <!-- Squid version --> 
+    <Preference 
+        android:key="squid_version"
+        android:order="32"
+        android:title="@string/squid_version"
+        settings:keywords="@string/keywords_squid_version"
+        android:summary="@string/squid_version_default"/>
+
+    <!-- Build date -->
+    <Preference 
+       android:key="build_date"
+       android:order="33"
+       android:title="@string/build_date"
+       settings:keywords="@string/keywords_build_date"
+       android:summary="@string/build_date_default" />
 
     <!--IP address -->
     <Preference
