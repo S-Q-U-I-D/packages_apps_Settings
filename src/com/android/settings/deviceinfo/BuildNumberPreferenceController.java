@@ -105,15 +105,7 @@ public class BuildNumberPreferenceController extends AbstractPreferenceControlle
         final Preference preference = screen.findPreference(KEY_BUILD_NUMBER);
         if (preference != null) {
             try {
-                StringBuilder sb = new StringBuilder();
-                sb.append(BidiFormatter.getInstance().unicodeWrap(
-                        TextUtils.isEmpty(Build.VENDOR.BUILD_NUMBER_OVERRIDE) ? Build.DISPLAY : Build.VENDOR.BUILD_NUMBER_OVERRIDE));
-                String pixelExperienceVersion = getPixelExperienceVersion();
-                if (!pixelExperienceVersion.equals("")){
-                    sb.append("\n");
-                    sb.append(pixelExperienceVersion);
-                }
-                preference.setSummary(sb.toString());
+                preference.setSummary(BidiFormatter.getInstance().unicodeWrap(Build.ID));
                 preference.setEnabled(true);
             } catch (Exception e) {
                 preference.setSummary(R.string.device_info_default);
