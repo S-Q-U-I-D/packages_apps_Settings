@@ -127,5 +127,8 @@
     <string name="color_Vermilion_700">Red</string>
     <string name="color_Teal_700">Teal</string>
     <string name="color_Yellow_700">Yellow</string>
+
+    <!-- Manage applications, package string displayed in app snippet -->
+    <string name="packagename_text"><xliff:g id="package_name">%1$s</xliff:g></string>
    
 </resources>
