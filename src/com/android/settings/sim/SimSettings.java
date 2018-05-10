@@ -40,6 +40,7 @@ import android.support.v7.preference.PreferenceCategory;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.preference.PreferenceViewHolder;
+import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.telephony.PhoneNumberUtils;
@@ -266,7 +267,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         simPref.setSummary(account == null
                 ? mContext.getResources().getString(R.string.sim_calls_ask_first_prefs_title)
                 : (String) account.getLabel());
-        simPref.setEnabled(allPhoneAccounts.size() > 1 && mSelectableSubInfos.size() > 1);
+        simPref.setEnabled(allPhoneAccounts.size() > 1);
     }
 
     @Override
@@ -371,16 +372,12 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         Context mContext;
 
         public SimPreference(Context context, SubscriptionInfo subInfoRecord, int slotId) {
-<<<<<<< HEAD
-            super(context);
-=======
             this(context, null, 0, subInfoRecord, slotId);
         }
 
         public SimPreference(Context context, AttributeSet attrs, int defStyle,
                 SubscriptionInfo subInfoRecord, int slotId) {
             super(context, attrs, defStyle);
->>>>>>> 5e8d2ed8b3... Clean up SIM enable toggle implementation
             mContext = context;
             mSubInfoRecord = subInfoRecord;
             mSlotId = slotId;
