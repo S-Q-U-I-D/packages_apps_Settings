@@ -16,6 +16,9 @@
 
 package com.android.settings.sim;
 
+import static com.android.internal.telephony.util.TelephonyExtUtils.PROVISIONED;
+import static com.android.internal.telephony.util.TelephonyExtUtils.NOT_PROVISIONED;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -35,7 +38,6 @@ import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceGroup;
 import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.preference.PreferenceViewHolder;
-import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.telephony.PhoneNumberUtils;
@@ -186,7 +188,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         for (int i = 0; i < prefSize; ++i) {
             Preference pref = mSimCards.getPreference(i);
             if (pref instanceof SimPreference) {
-                ((SimPreference)pref).update();
+                ((SimPreference) pref).update();
             }
         }
     }
@@ -283,7 +285,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             Preference pref = mSimCards.getPreference(i);
             if (pref instanceof SimEnablerPreference) {
                 // Calling cleanUp() here to dismiss/cleanup any pending dialog exists.
-                ((SimEnablerPreference)pref).cleanUpPendingDialogs();
+                ((SimEnablerPreference) pref).cleanUpPendingDialogs();
             }
         }
     }
@@ -388,12 +390,11 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
 
         protected CharSequence determineSummary() {
             CharSequence number = getPhoneNumber(mSubInfoRecord);
-            if (TextUtils.isEmpty(number)) {
-                return mSubInfoRecord.getDisplayName();
-            } else {
+            if (!TextUtils.isEmpty(number)) {
                 return mSubInfoRecord.getDisplayName() + " - " +
                         PhoneNumberUtils.createTtsSpannable(number);
             }
+            return mSubInfoRecord.getDisplayName();
         }
 
         private int getSlotId() {
@@ -401,8 +402,6 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         }
     }
 
-    // This is to show SIM Enable options on/off on UI for user selection.
-    //  User can activate/de-activate through SIM on/off options.
     private class SimEnablerPreference extends SimPreference implements OnCheckedChangeListener {
         private static final int EVT_UPDATE = 1;
         private static final int EVT_SHOW_RESULT_DLG = 2;
@@ -413,14 +412,14 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         private static final int ERROR_ALERT_DLG_ID = 2;
         private static final int RESULT_ALERT_DLG_ID = 3;
 
-        private boolean mCurrentUiccProvisionState;
-        private boolean mIsChecked;
-
-        private boolean mCmdInProgress = false;
-        private CompoundButton mSwitch;
-        //Delay for progress dialog to dismiss
+        // Delay for progress dialog to dismiss
         private static final int PROGRESS_DLG_TIME_OUT = 30000;
         private static final int MSG_DELAY_TIME = 2000;
+
+        private boolean mCurrentUiccProvisionState;
+        private boolean mIsChecked;
+        private boolean mCmdInProgress = false;
+        private CompoundButton mSwitch;
 
         public SimEnablerPreference(Context context, SubscriptionInfo sir, int slotId) {
             super(context, sir, slotId);
@@ -461,18 +460,14 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             mSwitch = (CompoundButton) holder.findViewById(R.id.sub_switch_widget);
             mSwitch.setOnCheckedChangeListener(this);
 
-            // Hide manual provisioning if the extphone framework
-            // is not present, as the operation relies on said framework.
+            // Hide manual provisioning if the extphone framework is not present,
+            // as the operation relies on said framework.
             if (!TelephonyExtUtils.getInstance(mContext).hasService() ||
                    !mContext.getResources().getBoolean(R.bool.config_enableManualSubProvisioning)) {
                 mSwitch.setVisibility(View.GONE);
             } else {
                 mSwitch.setVisibility(View.VISIBLE);
-                if (isAirplaneModeOn() || (!isCurrentSubValid())) {
-                    mSwitch.setEnabled(false);
-                } else {
-                    mSwitch.setEnabled(true);
-                }
+                mSwitch.setEnabled(!isAirplaneModeOn() && isCurrentSubValid());
                 setChecked(isSlotProvisioned(mSlotId));
             }
         }
@@ -485,39 +480,34 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             // assuming it as provisioned if extphone framework is not present
             TelephonyExtUtils extTelephony = TelephonyExtUtils.getInstance(mContext);
             mUiccProvisionStatus[mSlotId] = extTelephony.hasService() ?
-                    extTelephony.getCurrentUiccCardProvisioningStatus(mSlotId) :
-                    PROVISIONED;
+                    extTelephony.getCurrentUiccCardProvisioningStatus(mSlotId) : PROVISIONED;
 
             super.update();
         }
 
         // This method returns true if SubScription record corresponds to this
-        // Preference screen has a valid SIM and slot index/SubId.
+        // preference screen has a valid SIM and slot index/SubId.
         private boolean isCurrentSubValid() {
-            boolean isSubValid = false;
             if (hasCard()) {
                 SubscriptionInfo sir = mSubscriptionManager.
                         getActiveSubscriptionInfoForSimSlotIndex(mSlotId);
-                if (sir != null ) {
+                if (sir != null) {
                     mSubInfoRecord = sir;
-                    if (SubscriptionManager.isValidSubscriptionId(mSubInfoRecord.getSubscriptionId()) &&
+                    return SubscriptionManager.isValidSubscriptionId(
+                            mSubInfoRecord.getSubscriptionId()) &&
                             mSubInfoRecord.getSimSlotIndex() >= 0 &&
-                            getProvisionStatus(mSubInfoRecord.getSimSlotIndex()) >= 0) {
-                        isSubValid = true;
-                    }
+                            getProvisionStatus(mSubInfoRecord.getSimSlotIndex()) >= 0;
                 }
             }
-            return isSubValid;
+            return false;
         }
 
-        // Based on the received SIM provision state this method
-        // sets the check box on Sim Preference UI and updates new
-        // state to mCurrentUiccProvisionState.
+        // Based on the received SIM provision state this method sets the check box
+        // on SIM preference UI and updates new state to mCurrentUiccProvisionState.
         private void setChecked(boolean uiccProvisionState) {
             logd("setChecked: uiccProvisionState " + uiccProvisionState + "sir:" + mSubInfoRecord);
             if (mSwitch != null) {
                 mSwitch.setOnCheckedChangeListener(null);
-                // Do not update update checkstatus again in progress
                 if (!mCmdInProgress) {
                     mSwitch.setChecked(uiccProvisionState);
                 }
@@ -529,17 +519,16 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         @Override
         protected CharSequence determineSummary() {
             if (!isSlotProvisioned(mSlotId)) {
-                CharSequence state = mContext.getString(
-                        hasCard() ? R.string.sim_disabled : R.string.sim_missing);
+                CharSequence state = mContext.getString(hasCard() ?
+                        R.string.sim_disabled : R.string.sim_missing);
                 return mContext.getString(R.string.sim_enabler_summary,
                         mSubInfoRecord.getDisplayName(), state);
-            } else {
-                return super.determineSummary();
             }
+            return super.determineSummary();
         }
 
         /**
-        * get number of Subs provisioned on the device
+        * Get the number of Subs provisioned on the device
         * @param context
         * @return
         */
@@ -561,45 +550,42 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             mIsChecked = isChecked;
             logd("onClick: " + isChecked);
-
             handleUserRequest();
         }
 
         // This internal method called when user changes preference from UI
-        // 1. For activation/deactivation request from User, if device in APM mode
-        //    OR if voice call active on any SIM it dispay error dialog and returns.
-        // 2. For deactivation request it returns error dialog if only one SUB in
-        //    active state.
+        // 1. For activation/deactivation request from user, if device is in airplane mode OR
+        //    if voice call is active on any SIM it shows the error dialog and returns.
+        // 2. For deactivation request it returns error dialog if only one SUB in active state.
         // 3. In other cases it sends user request to framework.
         private void handleUserRequest() {
             if (isAirplaneModeOn()) {
-                // do nothing but warning
-                logd("APM is on, EXIT!");
+                // do nothing, but show warning
+                logd("APM is on, exiting!");
                 showAlertDialog(ERROR_ALERT_DLG_ID, R.string.sim_enabler_airplane_on);
                 return;
             }
             for (int i = 0; i < mPhoneCount; i++) {
                 int[] subId = SubscriptionManager.getSubId(i);
-                //when voice call in progress, subscription can't be activate/deactivate.
+                // when voice call is in progress, subscription can't be activated/deactivated.
                 if (TelephonyManager.getDefault().getCallState(subId[0])
                         != TelephonyManager.CALL_STATE_IDLE) {
-                    logd("Call state for phoneId: " + i + " is not idle, EXIT!");
+                    logd("Call state for phoneId: " + i + " is not idle, exiting!");
                     showAlertDialog(ERROR_ALERT_DLG_ID, R.string.sim_enabler_in_call);
                     return;
                 }
             }
 
             if (!mIsChecked) {
-                if (getNumOfSubsProvisioned() > 1) {
-                    logd("More than one sub is active, Deactivation possible.");
-                    sendUiccProvisioningRequest();
-                } else {
-                    logd("Only one sub is active. Deactivation not possible.");
+                if (getNumOfSubsProvisioned() <= 1) {
+                    logd("Only one sub is active, deactivation not possible.");
                     showAlertDialog(ERROR_ALERT_DLG_ID, R.string.sim_enabler_both_inactive);
                     return;
                 }
+                logd("More than one sub is active, deactivation possible.");
+                sendUiccProvisioningRequest();
             } else {
-                logd("Activate the sub");
+                logd("Activating the sub.");
                 sendUiccProvisioningRequest();
             }
         }
@@ -612,7 +598,6 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         }
 
         private class SimEnablerDisabler extends AsyncTask<Void, Void, Integer> {
-
             int newProvisionedState = NOT_PROVISIONED;
 
             @Override
@@ -651,46 +636,26 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             // Confirm only one AlertDialog instance to show.
             dismissDialog(mAlertDialog);
             dismissDialog(mProgressDialog);
-            AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
-                    .setTitle(title);
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext).setTitle(title);
 
-            switch(dialogId) {
+            switch (dialogId) {
                 case CONFIRM_ALERT_DLG_ID:
-                    String message;
-                    if (mContext.getResources().getBoolean(
-                            R.bool.confirm_to_switch_data_service)) {
-                        if (SubscriptionManager.getDefaultDataSubscriptionId() ==
-                                mSubInfoRecord.getSubscriptionId()) {
-                            message = mContext.getString(
-                                    R.string.sim_enabler_need_switch_data_service,
-                                    getProvisionedSlotId());
-                        } else {
-                            message = mContext.getString(R.string.sim_enabler_need_disable_sim);
-                        }
-                        builder.setTitle(R.string.sim_enabler_will_disable_sim_title);
-                    } else {
-                        message = mContext.getString(R.string.sim_enabler_need_disable_sim);
-                    }
-                    builder.setMessage(message);
+                    builder.setMessage(R.string.sim_enabler_need_disable_sim)
                     builder.setPositiveButton(android.R.string.ok, mDialogClickListener);
                     builder.setNegativeButton(android.R.string.no, mDialogClickListener);
                     builder.setOnCancelListener(mDialogCanceListener);
                     break;
-
                 case ERROR_ALERT_DLG_ID:
                     builder.setMessage(mContext.getString(msgId));
                     builder.setNeutralButton(android.R.string.ok, mDialogClickListener);
                     builder.setOnCancelListener(mDialogCanceListener);
                     break;
-
                 case RESULT_ALERT_DLG_ID:
                     String msg = mCurrentUiccProvisionState ?
-                             mContext.getString(R.string.sub_activate_success) :
+                            mContext.getString(R.string.sub_activate_success) :
                             mContext.getString(R.string.sub_deactivate_success);
                     builder.setMessage(msg);
                     builder.setNeutralButton(android.R.string.ok, null);
-                    break;
-                default:
                     break;
             }
 
@@ -705,8 +670,8 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
                     mSubscriptionManager.getActiveSubscriptionInfoList();
             if (subInfoLists != null) {
                 for (SubscriptionInfo subInfo : subInfoLists) {
-                    if (isSlotProvisioned(subInfo.getSimSlotIndex())
-                            && subInfo.getSubscriptionId() != mSubInfoRecord.getSubscriptionId())
+                    if (isSlotProvisioned(subInfo.getSimSlotIndex()) &&
+                            subInfo.getSubscriptionId() != mSubInfoRecord.getSubscriptionId())
                         activeSlotId = subInfo.getSimSlotIndex() + 1;
                 }
             }
@@ -716,8 +681,8 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         private void showProgressDialog() {
             String title = mSubInfoRecord.getDisplayName().toString();
 
-            String msg = mContext.getString(mIsChecked ? R.string.sim_enabler_enabling
-                    : R.string.sim_enabler_disabling);
+            String msg = mContext.getString(mIsChecked ?
+                    R.string.sim_enabler_enabling : R.string.sim_enabler_disabling);
             dismissDialog(mProgressDialog);
             mProgressDialog = new ProgressDialog(mContext);
             mProgressDialog.setIndeterminate(true);
@@ -731,7 +696,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         }
 
         private void dismissDialog(Dialog dialog) {
-            if((dialog != null) && (dialog.isShowing())) {
+            if (dialog != null && dialog.isShowing()) {
                 dialog.dismiss();
                 dialog = null;
             }
@@ -742,22 +707,24 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             dismissDialog(mAlertDialog);
         }
 
-        private DialogInterface.OnClickListener mDialogClickListener = new DialogInterface
-                .OnClickListener() {
+        private DialogInterface.OnClickListener mDialogClickListener =
+                new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        if (which == DialogInterface.BUTTON_POSITIVE) {
-                            dismissDialog(mAlertDialog);
-                            sendUiccProvisioningRequest();
-                        } else if (which == DialogInterface.BUTTON_NEGATIVE) {
-                            update();
-                        } else if (which == DialogInterface.BUTTON_NEUTRAL) {
-                            update();
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                dismissDialog(mAlertDialog);
+                                sendUiccProvisioningRequest();
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                            case DialogInterface.BUTTON_NEUTRAL:
+                                update();
+                                break;
                         }
                     }
                 };
 
-        private DialogInterface.OnCancelListener mDialogCanceListener = new DialogInterface
-                .OnCancelListener() {
+        private DialogInterface.OnCancelListener mDialogCanceListener =
+                new DialogInterface.OnCancelListener() {
                     public void onCancel(DialogInterface dialog) {
                         update();
                     }
@@ -767,11 +734,9 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         private Handler mHandler = new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
-
-                    switch(msg.what) {
+                    switch (msg.what) {
                         case EVT_UPDATE:
                             simEnablerUpdate();
-
                         case EVT_SHOW_RESULT_DLG:
                             int result = msg.arg1;
                             int newProvisionedState = msg.arg2;
@@ -789,31 +754,22 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
                             }
                             mHandler.removeMessages(EVT_PROGRESS_DLG_TIME_OUT);
                             break;
-
                         case EVT_SHOW_PROGRESS_DLG:
                             logd("EVT_SHOW_PROGRESS_DLG");
                             showProgressDialog();
                             break;
-
                         case EVT_PROGRESS_DLG_TIME_OUT:
                             logd("EVT_PROGRESS_DLG_TIME_OUT");
                             dismissDialog(mProgressDialog);
                             // Must update UI when time out
                             update();
                             break;
-
-                        default:
-                        break;
                     }
                 }
             };
 
         private void logd(String msg) {
             if (DBG) Log.d(TAG + "(" + mSlotId + ")", msg);
-        }
-
-        private void loge(String msg) {
-            if (DBG) Log.e(TAG + "(" + mSlotId + ")", msg);
         }
     }
 
