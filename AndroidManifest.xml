@@ -3362,6 +3362,7 @@
         <!-- SquidSettings -->
         <activity android:name=".Settings$SquidSettingsActivity"
             android:label="@string/squid_settings_title"
+            android:icon="@drawable/ic_settings_squid"
             android:taskAffinity="">
             <intent-filter android:priority="1">
                 <action android:name="com.squid.settings.SquidSettings" />
