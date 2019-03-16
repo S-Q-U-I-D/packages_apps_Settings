@@ -3359,7 +3359,6 @@
         <service android:name=".fuelgauge.batterytip.AnomalyDetectionJobService"
                  android:permission="android.permission.BIND_JOB_SERVICE" />
 
-<<<<<<< HEAD
         <!-- SquidSettings -->
         <activity android:name=".Settings$SquidSettingsActivity"
             android:label="@string/squid_settings_title"
