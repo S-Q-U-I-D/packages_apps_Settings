@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.settings.aosp;
+package com.android.settings.squid;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -75,6 +75,6 @@ public class Changelog extends SettingsPreferenceFragment {
 
     @Override
     public int getMetricsCategory() {
-        return MetricsProto.MetricsEvent.AOSP;
+        return MetricsProto.MetricsEvent.SQUID;
     }
 }

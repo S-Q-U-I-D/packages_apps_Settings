@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.android.settings.aosp;
+package com.android.settings.squid;
 
 import android.os.Bundle;
 import android.provider.Settings;
@@ -139,6 +139,6 @@ public abstract class CustomSettingsPreferenceFragment extends SettingsPreferenc
 
     @Override
     public int getMetricsCategory() {
-        return MetricsEvent.AOSP;
+        return MetricsEvent.SQUID;
     }
 }
