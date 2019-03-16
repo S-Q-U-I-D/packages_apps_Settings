@@ -243,11 +243,11 @@ public class PowerUsageSummary extends PowerUsageBase implements OnLongClickList
         } else if (KEY_BATTERY_TEMP.equals(preference.getKey())) {
             if (batteryTemp) {
                 mBatteryTemp.setSubtitle(
-                    com.android.internal.util.aosip.aosipUtils.batteryTemperature(getContext(), false));
+                    com.android.internal.util.squid.SquidUtils.batteryTemperature(getContext(), false));
                 batteryTemp = false;
             } else {
                 mBatteryTemp.setSubtitle(
-                    com.android.internal.util.aosip.aosipUtils.batteryTemperature(getContext(), true));
+                    com.android.internal.util.squid.SquidUtils.batteryTemperature(getContext(), true));
                 batteryTemp = true;
             }
         }
@@ -377,7 +377,7 @@ public class PowerUsageSummary extends PowerUsageBase implements OnLongClickList
         mScreenUsagePref.setSubtitle(StringUtil.formatElapsedTime(getContext(),
                 mBatteryUtils.calculateScreenUsageTime(mStatsHelper), false));
         mBatteryTemp.setSubtitle(
-                com.android.internal.util.aosip.aosipUtils.batteryTemperature(getContext(), batteryTemp));
+                com.android.internal.util.squid.SquidUtils.batteryTemperature(getContext(), batteryTemp));
     }
 
     @VisibleForTesting
