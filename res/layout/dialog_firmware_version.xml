@@ -35,6 +35,7 @@
 	       android:layout_width="match_parent"
  	       android:layout_height="match_parent"
 	       android:src="@drawable/ic_squid_banner"
+               android:tint="?android:attr/colorAccent"
 	       android:adjustViewBounds="true"
 	       android:scaleType="centerInside" />
 
@@ -50,7 +51,7 @@
             style="@style/device_info_dialog_value"
             android:id="@+id/firmware_version_value"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="wrap_content"/>
         <TextView
             style="@style/device_info_dialog_label"
             android:id="@+id/squid_version_label"
