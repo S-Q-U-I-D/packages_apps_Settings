@@ -35,11 +35,11 @@ import com.android.settingslib.core.lifecycle.Lifecycle;
 import com.android.settingslib.core.lifecycle.LifecycleObserver;
 import com.android.settingslib.core.lifecycle.events.OnResume;
 
-public class SquidVersionPreferenceController extends AbstractPreferenceController implements
+public class AospVersionPreferenceController extends AbstractPreferenceController implements
         PreferenceControllerMixin, LifecycleObserver, OnResume {
 
-    private static final String TAG = "SquidVersionPref";
-    private static final String KEY_SQUID_VERSION = "squid_version";
+    private static final String TAG = "AospVersionPref";
+    private static final String KEY_AOSP_VERSION = "aosp_version";
 
     private final UserManager mUserManager;
 
@@ -48,7 +48,7 @@ public class SquidVersionPreferenceController extends AbstractPreferenceControll
 
     private long[] mHits = new long[3];
 
-    public SquidVersionPreferenceController(Context context, Lifecycle lifecycle) {
+    public AospVersionPreferenceController(Context context, Lifecycle lifecycle) {
         super(context);
         mUserManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
         if (lifecycle != null) {
@@ -66,13 +66,13 @@ public class SquidVersionPreferenceController extends AbstractPreferenceControll
         super.displayPreference(screen);
         final Preference pref = screen.findPreference(getPreferenceKey());
         if (pref != null) {
-            pref.setSummary(Build.SQUID_DISPLAY_VERSION);
+            pref.setSummary(Build.AOSP_DISPLAY_VERSION);
         }
     }
 
     @Override
     public String getPreferenceKey() {
-        return KEY_SQUID_VERSION;
+        return KEY_AOSP_VERSION;
     }
 
     @Override
@@ -85,7 +85,7 @@ public class SquidVersionPreferenceController extends AbstractPreferenceControll
 
     @Override
     public boolean handlePreferenceTreeClick(Preference preference) {
-        if (!TextUtils.equals(preference.getKey(), KEY_SQUID_VERSION)) {
+        if (!TextUtils.equals(preference.getKey(), KEY_AOSP_VERSION)) {
             return false;
         }
         System.arraycopy(mHits, 1, mHits, 0, mHits.length - 1);

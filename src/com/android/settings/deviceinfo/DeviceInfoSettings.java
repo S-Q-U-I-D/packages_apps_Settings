@@ -32,7 +32,7 @@ import com.android.settings.deviceinfo.firmwareversion.FirmwareVersionPreference
 import com.android.settings.deviceinfo.imei.ImeiInfoPreferenceController;
 import com.android.settings.deviceinfo.simstatus.SimStatusPreferenceController;
 import com.android.settings.deviceinfo.BuildDatePreferenceController;
-import com.android.settings.deviceinfo.AospVersionPreferenceController;
+import com.android.settings.deviceinfo.SquidVersionPreferenceController;
 import com.android.settings.search.BaseSearchIndexProvider;
 import com.android.settings.search.Indexable;
 import com.android.settingslib.core.AbstractPreferenceController;
